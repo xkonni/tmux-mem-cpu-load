@@ -168,30 +168,36 @@ std::string cpu_string( unsigned int cpu_usage_delay,
   unsigned int graph_lines,
   bool use_colors )
 {
-  std::string meter( graph_lines + 2, ' ' );
-  meter[0] = '[';
-  meter[meter.length() - 1] = ']';
-  int meter_count = 0;
-  float percentage;
-  std::ostringstream oss;
-  oss.precision( 1 );
-  oss.setf( std::ios::fixed | std::ios::right );
+    std::string meter( graph_lines + 2, ' ' );
+    float percentage;
+    std::ostringstream oss;
+    oss.precision( 1 );
+    oss.setf( std::ios::fixed | std::ios::right );
 
-  percentage = cpu_percentage( cpu_usage_delay );
-  float meter_step = 99.9 / graph_lines;
-  meter_count = 1;
-  while(meter_count*meter_step < percentage)
-    {
-    meter[meter_count] = '|';
-    meter_count++;
-    }
+    percentage = cpu_percentage( cpu_usage_delay );
+    float meter_step = 99.9 / graph_lines;
+    if (graph_lines > 0)
+      {
+      meter[0] = '[';
+      meter[meter.length() - 1] = ']';
+      int meter_count = 0;
+      meter_count = 1;
+      while(meter_count*meter_step < percentage)
+        {
+        meter[meter_count] = '|';
+        meter_count++;
+        }
+      }
 
   if( use_colors )
     {
     oss << cpu_percentage_lut[static_cast<unsigned int>( percentage )];
     }
-  oss << meter;
-  oss.width( 5 );
+  if (graph_lines > 0)
+    {
+    oss << meter;
+    oss.width( 5 );
+    }
   oss << percentage;
   oss << "%";
   if( use_colors )
@@ -395,11 +401,11 @@ int main(int argc, char** argv)
       iss.str( argv[arg_index] );
       iss.clear();
       iss >> graph_lines;
-      if( graph_lines < 1 )
-        {
-        std::cerr << "Graph lines argument must be one or greater." << std::endl;
-        return EXIT_FAILURE;
-        }
+      // if( graph_lines < 1 )
+      //   {
+      //   std::cerr << "Graph lines argument must be one or greater." << std::endl;
+      //   return EXIT_FAILURE;
+      //   }
       }
     }
   catch(const std::exception &e)
